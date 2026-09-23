@@ -1,0 +1,40 @@
+// Must stay in sync with backend/src/config/quotationStatus.js.
+export const STATUS = {
+  DRAFT: "DRAFT",
+  INTERNAL_REVIEW: "INTERNAL_REVIEW",
+  APPROVED: "APPROVED",
+  SENT: "SENT",
+  CUSTOMER_ACCEPTED: "CUSTOMER_ACCEPTED",
+  CUSTOMER_REJECTED: "CUSTOMER_REJECTED",
+  EXPIRED: "EXPIRED",
+  CANCELLED: "CANCELLED",
+};
+
+export const ALL_STATUSES = Object.values(STATUS);
+
+export const STATUS_LABELS = {
+  DRAFT: "Draft",
+  INTERNAL_REVIEW: "Internal Review",
+  APPROVED: "Approved",
+  SENT: "Sent",
+  CUSTOMER_ACCEPTED: "Customer Accepted",
+  CUSTOMER_REJECTED: "Customer Rejected",
+  EXPIRED: "Expired",
+  CANCELLED: "Cancelled",
+};
+
+export const STATUS_COLORS = {
+  DRAFT: "#6B7280",
+  INTERNAL_REVIEW: "#B45309",
+  APPROVED: "#0369A1",
+  SENT: "#1E40AF",
+  CUSTOMER_ACCEPTED: "#166534",
+  CUSTOMER_REJECTED: "#991B1B",
+  EXPIRED: "#78350F",
+  CANCELLED: "#374151",
+};
+
+export const REVISABLE_STATUSES = [
+  STATUS.APPROVED, STATUS.SENT, STATUS.CUSTOMER_ACCEPTED,
+  STATUS.CUSTOMER_REJECTED, STATUS.EXPIRED, STATUS.CANCELLED,
+];
