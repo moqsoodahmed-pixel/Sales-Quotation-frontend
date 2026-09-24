@@ -75,9 +75,10 @@ export default function QuotationDetailPage() {
   };
 
   const handleGeneratePDF = async () => {
+    if (downloading) return;
     setDownloading(true);
     try {
-      const res = await api.post(`/quotations/${id}/pdf`, null, { responseType: "blob" });
+      const res = await api.post(`/quotations/${id}/pdf`, undefined, { responseType: "blob" });
       const url = window.URL.createObjectURL(res.data);
       const a = document.createElement("a");
       a.href = url;
@@ -88,7 +89,35 @@ export default function QuotationDetailPage() {
       window.URL.revokeObjectURL(url);
       toast.success("PDF generated!");
     } catch (e) {
-      toast.error(e.response?.data?.message || "PDF generation failed.");
+      // `responseType: "blob"` above also applies to error responses, so
+      // axios hands back the JSON error body as an opaque Blob instead of
+      // a parsed object - e.response.data.message is always undefined and
+      // every failure collapses into the generic fallback below. Parse the
+      // blob back into JSON (when possible) so the real server message
+      // (logged with full detail server-side, see errorHandler.js) reaches
+      // the user instead of a one-size-fits-all toast.
+      let message = "PDF generation failed.";
+      const data = e.response?.data;
+      const contentType = e.response?.headers?.["content-type"] || "";
+      // Only ever attempt to read the blob as JSON when the server actually
+      // says it sent JSON (axios only lands us here for a non-2xx status to
+      // begin with, but a PDF-typed or empty error body must never be run
+      // through JSON.parse - that's what previously blew up with
+      // "Unexpected token ... is not valid JSON").
+      if (data instanceof Blob && contentType.includes("application/json")) {
+        try {
+          const text = await data.text();
+          const parsed = text ? JSON.parse(text) : null;
+          message = parsed?.message || message;
+        } catch {
+          // Body claimed to be JSON but wasn't (or was literally "null"/
+          // empty) - keep the generic fallback rather than letting the
+          // parse failure itself throw an unhandled error.
+        }
+      } else if (data?.message) {
+        message = data.message;
+      }
+      toast.error(message);
     }
     setDownloading(false);
   };
