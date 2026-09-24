@@ -5,8 +5,29 @@ import { login, clearError } from "../../store/slices/authSlice";
 import { useAuth } from "../../hooks/useAuth";
 import toast from "react-hot-toast";
 
+// Small inline icons so we don't need to add a new icon-library dependency
+// just for this toggle.
+function EyeIcon(props) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EyeOffIcon(props) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.29 20.29 0 0 1-3.22 4.55M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+      <path d="M1 1l22 22" />
+    </svg>
+  );
+}
+
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const { loading, error, isAuthenticated } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -50,14 +71,25 @@ export default function LoginPage() {
           </div>
           <div style={styles.group}>
             <label style={styles.label}>Password</label>
-            <input
-              style={styles.input}
-              type="password"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              autoComplete="current-password"
-            />
+            <div style={styles.passwordWrap}>
+              <input
+                style={styles.passwordInput}
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                style={styles.eyeBtn}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
           </div>
           <button style={{ ...styles.btn, ...(loading ? styles.btnDisabled : {}) }} type="submit" disabled={loading}>
             {loading ? "Signing in…" : "Sign In"}
@@ -82,6 +114,9 @@ const styles = {
   group: { display: "flex", flexDirection: "column", gap: 5 },
   label: { fontSize: 13, fontWeight: 500, color: "#374151" },
   input: { padding: "10px 13px", border: "1px solid #E5E7EB", borderRadius: 7, fontSize: 14, outline: "none", fontFamily: "inherit" },
+  passwordWrap: { position: "relative", display: "flex", alignItems: "center" },
+  passwordInput: { padding: "10px 40px 10px 13px", border: "1px solid #E5E7EB", borderRadius: 7, fontSize: 14, outline: "none", fontFamily: "inherit", width: "100%" },
+  eyeBtn: { position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", padding: 4, margin: 0, cursor: "pointer", color: "#6B7280", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 0 },
   btn: { padding: "11px", background: "#1F3C88", color: "#fff", border: "none", borderRadius: 7, fontSize: 14.5, fontWeight: 600, cursor: "pointer", marginTop: 4 },
   btnDisabled: { opacity: 0.6, cursor: "not-allowed" },
   footer: { textAlign: "center", marginTop: 28, fontSize: 11, color: "#9CA3AF" },
