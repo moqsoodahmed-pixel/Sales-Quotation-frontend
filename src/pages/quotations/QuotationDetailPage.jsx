@@ -41,7 +41,12 @@ export default function QuotationDetailPage() {
     const res = await dispatch(transitionQuotation({ id, action, comment }));
     if (!res.error) {
       toast.success("Updated!");
-      if (res.payload.acceptanceUrl) setAcceptanceLink(window.location.origin + res.payload.acceptanceUrl);
+      if (res.payload.acceptanceUrl) {
+        // BASE_URL ('/salesQuotation/') must be included here since this link is sent to
+        // customers directly — it doesn't go through React Router, which adds it automatically.
+        const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+        setAcceptanceLink(window.location.origin + base + res.payload.acceptanceUrl);
+      }
       load();
     } else toast.error(res.payload);
     return !res.error;
