@@ -1,6 +1,10 @@
 import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+// import.meta.env.BASE_URL mirrors the `base` set in vite.config.js (e.g. '/salesQuotation/').
+// Plain window.location redirects (unlike React Router) don't know about that base path,
+// so it has to be prepended by hand here.
+const LOGIN_PATH = `${import.meta.env.BASE_URL}login`
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -22,7 +26,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true
       const refreshToken = localStorage.getItem('refreshToken')
-      if (!refreshToken) { window.location.href = '/login'; return Promise.reject(error) }
+      if (!refreshToken) { window.location.href = LOGIN_PATH; return Promise.reject(error) }
       try {
         const res = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken })
         localStorage.setItem('accessToken', res.data.accessToken)
@@ -31,7 +35,7 @@ api.interceptors.response.use(
         return api(original)
       } catch {
         localStorage.clear()
-        window.location.href = '/login'
+        window.location.href = LOGIN_PATH
       }
     }
     return Promise.reject(error)
