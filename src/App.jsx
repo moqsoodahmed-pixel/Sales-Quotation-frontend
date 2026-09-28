@@ -117,7 +117,7 @@ const styles = {
 export default function App() {
   return (
     <Provider store={store}>
-      <BrowserRouter>
+      <BrowserRouter basename="/salesQuotation">
         <AppRoutes />
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       </BrowserRouter>
