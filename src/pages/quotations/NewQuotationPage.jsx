@@ -11,6 +11,23 @@ import toast from "react-hot-toast";
 const fmt = (n) => "₹ " + Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 });
 const DEFAULT_VALID_UNTIL = () => new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
 
+// Renders the tech-stack text the same way the PDF does:
+// "Label: details" -> bold label, "- item" -> bullet, anything else -> paragraph.
+const TechStackView = ({ text }) => {
+  const lines = String(text || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  return (
+    <div style={{ fontSize: 13, color: "#374151", lineHeight: 1.6 }}>
+      {lines.map((line, i) => {
+        const bullet = /^[-*\u2022]\s*/.test(line);
+        const content = bullet ? line.replace(/^[-*\u2022]\s*/, "") : line;
+        const m = content.match(/^([^:]{1,40}):\s+(.+)$/);
+        const body = m ? <><strong style={{ color: "#111827" }}>{m[1]}:</strong> {m[2]}</> : content;
+        return <div key={i} style={bullet ? { paddingLeft: 14, textIndent: -10 } : {}}>{bullet ? "• " : ""}{body}</div>;
+      })}
+    </div>
+  );
+};
+
 export default function NewQuotationPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -43,6 +60,7 @@ export default function NewQuotationPage() {
   const [validUntil, setValidUntil] = useState(DEFAULT_VALID_UNTIL());
   const [termsText, setTermsText] = useState("");
   const [notes, setNotes] = useState("");
+  const [techStack, setTechStack] = useState("");
 
   useEffect(() => { api.get("/services", { params: { limit: 200 } }).then((r) => setCatalogue(r.data.data)).catch(() => {}); }, []);
 
@@ -107,6 +125,7 @@ export default function NewQuotationPage() {
       setValidUntil(q.validUntil ? q.validUntil.slice(0, 10) : DEFAULT_VALID_UNTIL());
       setTermsText((q.terms || []).join("\n"));
       setNotes(q.internalNotes || "");
+      setTechStack(q.techStack || "");
       setLoadingExisting(false);
     }).catch(() => { toast.error("Quotation not found."); navigate("/quotations"); });
   }, [isEdit, id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -202,6 +221,7 @@ export default function NewQuotationPage() {
       discountValue: Number(discountValue) || 0,
       terms: termsText.split("\n").map((t) => t.trim()).filter(Boolean),
       internalNotes: notes,
+      techStack: techStack.trim(),
     };
 
     const res = isEdit
@@ -360,6 +380,19 @@ export default function NewQuotationPage() {
             </div>
           </div>
 
+          <h2 style={{ ...styles.cardTitle, marginTop: 20 }}>Technology Stack & Approach</h2>
+          <label style={styles.label}>How the project will be built (shown on the PDF)</label>
+          <textarea
+            style={{ ...styles.input, height: 140, marginBottom: 6, fontFamily: "inherit", lineHeight: 1.5 }}
+            value={techStack}
+            onChange={(e) => setTechStack(e.target.value)}
+            maxLength={5000}
+            placeholder={"Frontend: React.js with Tailwind CSS\nBackend: Node.js + Express REST API\nDatabase: MongoDB Atlas\nHosting: Cloudflare Pages with SSL and global CDN\n- Mobile-first responsive layout\n- On-page SEO and Google Analytics setup"}
+          />
+          <p style={{ fontSize: 11.5, color: "#6B7280", margin: "0 0 14px" }}>
+            One item per line. Write <strong>Label: details</strong> for a bold label, or start a line with <strong>-</strong> for a bullet point. Leave empty to hide this section.
+          </p>
+
           <h2 style={{ ...styles.cardTitle, marginTop: 20 }}>Terms & Notes</h2>
           <label style={styles.label}>Terms (one per line)</label>
           <textarea style={{ ...styles.input, height: 90, marginBottom: 14 }} value={termsText} onChange={(e) => setTermsText(e.target.value)} placeholder="This quotation is valid for 14 days from the date of issue.&#10;50% advance payment required." />
@@ -406,6 +439,13 @@ export default function NewQuotationPage() {
             </div>
             <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 8 }}>Final totals are calculated by the server at save time.</p>
           </div>
+
+          {techStack.trim() && (
+            <div style={{ marginTop: 16, padding: "12px 16px", border: "1px solid #E5E7EB", borderRadius: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#1F3C88", marginBottom: 6 }}>Technology Stack & Approach</div>
+              <TechStackView text={techStack} />
+            </div>
+          )}
 
           <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
             <button style={styles.backStepBtn} onClick={() => setStep(3)}>← Back</button>

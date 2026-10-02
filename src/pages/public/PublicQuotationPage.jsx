@@ -84,6 +84,24 @@ export default function PublicQuotationPage() {
           <div style={{ ...styles.totalRow, fontWeight: 700, fontSize: 16, borderTop: "2px solid #1F3C88", paddingTop: 8 }}><span>Total</span><span>{fmt(q.total)}</span></div>
         </div>
 
+        {q.techStack && (
+          <div style={{ marginTop: 16 }}>
+            <div style={styles.label}>Technology Stack & Approach</div>
+            <div style={{ fontSize: 12.5, color: "#374151", lineHeight: 1.6 }}>
+              {q.techStack.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((line, i) => {
+                const bullet = /^[-*\u2022]\s*/.test(line);
+                const content = bullet ? line.replace(/^[-*\u2022]\s*/, "") : line;
+                const m = content.match(/^([^:]{1,40}):\s+(.+)$/);
+                return (
+                  <div key={i} style={bullet ? { paddingLeft: 14, textIndent: -10 } : {}}>
+                    {bullet ? "• " : ""}{m ? <><strong>{m[1]}:</strong> {m[2]}</> : content}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {q.terms?.length > 0 && (
           <div style={{ marginTop: 16 }}>
             <div style={styles.label}>Terms</div>

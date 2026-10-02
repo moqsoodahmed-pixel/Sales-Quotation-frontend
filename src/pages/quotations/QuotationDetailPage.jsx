@@ -264,6 +264,24 @@ export default function QuotationDetailPage() {
         </div>
       </div>
 
+      {q.techStack && (
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>Technology Stack & Approach</h2>
+          <div style={{ fontSize: 13, color: "#374151", lineHeight: 1.6 }}>
+            {q.techStack.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((line, i) => {
+              const bullet = /^[-*\u2022]\s*/.test(line);
+              const content = bullet ? line.replace(/^[-*\u2022]\s*/, "") : line;
+              const m = content.match(/^([^:]{1,40}):\s+(.+)$/);
+              return (
+                <div key={i} style={bullet ? { paddingLeft: 14, textIndent: -10 } : {}}>
+                  {bullet ? "• " : ""}{m ? <><strong style={{ color: "#111827" }}>{m[1]}:</strong> {m[2]}</> : content}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
         <div style={{ ...styles.card, flex: 1, minWidth: 280 }}>
           <h2 style={styles.cardTitle}>Version History</h2>
